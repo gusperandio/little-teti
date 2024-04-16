@@ -3,8 +3,9 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"dev": "next dev",
-		"build": "next build",
+		"dev": "npm run open-browser && next dev -p 3000",
+    "open-browser": "start http://localhost:3000",
+    "build": "next build",
 		"start": "next start",
 		"lint": "next lint"
 	},
@@ -15,6 +16,7 @@
 		"@nextui-org/kbd": "^2.0.26",
 		"@nextui-org/link": "^2.0.27",
 		"@nextui-org/navbar": "^2.0.28",
+		"@nextui-org/react": "^2.3.1",
 		"@nextui-org/snippet": "^2.0.32",
 		"@nextui-org/switch": "^2.0.26",
 		"@nextui-org/system": "2.1.0",
