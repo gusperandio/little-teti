@@ -9,15 +9,24 @@ module.exports = {
     "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        inria: ['Inria Sans', 'sans-serif'],
+      },
+      fontWeight: {
+        light: 300,
+        normal: 400, 
+        bold: 700,
+      },
+    },
   },
   darkMode: "class",
   plugins: [nextui({
     themes: {
       light: {
         colors: {
-          background: "#FFF", // or DEFAULT
-          foreground: "#11181C", // or 50 to 900 DEFAULT
+          background: "#FFF",  
+          foreground: "#11181C",  
           primary: {
             foreground: "#FFFFFF",
             DEFAULT: "#006FEE",
