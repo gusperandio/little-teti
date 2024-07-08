@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// yarn prisma migrate dev --name {name}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          String        @id @default(uuid())
+  name        String?
+  email       String        @unique
+  password    String
+  phone       String?
+  cpf         String?
+  role        String?
+  carts       Cart?         @relation(fields: [cartId], references: [id])
+  purchases   Purchase[]
+  stickers    Sticker[]     @relation("UserStickers")
+  addresses   Address[]
+  cartId      Int?
+  userSticker UserSticker[]
+
+  @@map("users")
+}
+
+model Address {
+  id         Int     @id @default(autoincrement())
+  userId     String
+  user       User    @relation(fields: [userId], references: [id])
+  postalCode Int
+  num        Int
+  district   String
+  complement String?
+  city       String
+  state      String
+  principal  Boolean @default(false)
+
+  @@map("address")
+}
+
+model Cart {
+  id             Int       @id @default(autoincrement())
+  products       Product[]
+  amountProducts Int
+  price          Float
+  users          User[]
+
+  @@map("cart")
+}
+
+model Purchase {
+  id          Int       @id @default(autoincrement())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  NFe         String
+  totalPrice  Float
+  sended      Boolean   @default(false)
+  products    Product[]
+  trackingNum String?
+
+  @@map("purchase")
+}
+
+model Sticker {
+  id          String        @id @default(uuid())
+  name        String
+  imgUrl      String
+  users       User[]        @relation("UserStickers")
+  userSticker UserSticker[]
+
+  @@map("sticker")
+}
+
+model UserSticker {
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  stickerId String
+  sticker   Sticker @relation(fields: [stickerId], references: [id])
+
+  @@id([userId, stickerId])
+  @@map("userSticker")
+}
+
+model Product {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  fakePrice   Float
+  active      Boolean
+  color       String
+  girl        Float
+  sizes       ProductSize[]
+  cart        Cart?         @relation(fields: [cartId], references: [id])
+  cartId      Int?
+  purchase    Purchase?     @relation(fields: [purchaseId], references: [id])
+  purchaseId  Int?
+
+  @@map("product")
+}
+
+model ProductSize {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  sizeName  String
+  amount    Int
+
+  @@map("productSize")
+}
