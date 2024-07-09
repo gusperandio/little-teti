@@ -21,7 +21,7 @@ model User {
   password    String
   phone       String?
   cpf         String?
-  role        String?
+  role        String?       @default("user")
   carts       Cart?         @relation(fields: [cartId], references: [id])
   purchases   Purchase[]
   stickers    Sticker[]     @relation("UserStickers")
@@ -58,13 +58,13 @@ model Cart {
 }
 
 model Purchase {
-  id          Int       @id @default(autoincrement())
+  id          Int               @id @default(autoincrement())
   userId      String
-  user        User      @relation(fields: [userId], references: [id])
+  user        User              @relation(fields: [userId], references: [id])
   NFe         String
   totalPrice  Float
-  sended      Boolean   @default(false)
-  products    Product[]
+  sended      Boolean           @default(false)
+  products    PurchaseProduct[] // Relacionamento muitos-para-muitos através do modelo de junção
   trackingNum String?
 
   @@map("purchase")
@@ -91,21 +91,30 @@ model UserSticker {
 }
 
 model Product {
-  id          Int           @id @default(autoincrement())
+  id          Int               @id @default(autoincrement())
   name        String
   description String?
   price       Float
   fakePrice   Float
   active      Boolean
   color       String
-  girl        Float
+  girl        Boolean
   sizes       ProductSize[]
-  cart        Cart?         @relation(fields: [cartId], references: [id])
+  tags        Tags[]
+  cart        Cart?             @relation(fields: [cartId], references: [id])
   cartId      Int?
-  purchase    Purchase?     @relation(fields: [purchaseId], references: [id])
-  purchaseId  Int?
+  purchases   PurchaseProduct[]
 
   @@map("product")
+}
+
+model PurchaseProduct {
+  purchase   Purchase @relation(fields: [purchaseId], references: [id])
+  purchaseId Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+
+  @@id([purchaseId, productId])
 }
 
 model ProductSize {
@@ -116,4 +125,13 @@ model ProductSize {
   amount    Int
 
   @@map("productSize")
+}
+
+model Tags {
+  id        Int      @id @default(autoincrement())
+  name_tag  String
+  Product   Product? @relation(fields: [productId], references: [id])
+  productId Int?
+
+  @@map("tags")
 }
