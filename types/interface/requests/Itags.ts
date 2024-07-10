@@ -1,3 +1,3 @@
 export interface ITags{
-  name: string
+  tagName: string
 }
