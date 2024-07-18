@@ -10,5 +10,6 @@ export interface IProduct {
   color: string;
   girl: boolean;
   sizes: IProductSize[];      
-  tags: ITags[];               
+  tags: ITags[];   
+  category: number;            
 }

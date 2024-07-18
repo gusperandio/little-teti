@@ -4,9 +4,7 @@ import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 import supabase from "@/lib/supabase/supabaseClient";
 
-export async function GET(){
-  
-}
+export async function GET() {}
 
 export async function POST(request: Request) {
   try {
@@ -44,6 +42,7 @@ export async function POST(request: Request) {
           tagName: yup.string().required(),
         })
       ),
+      category: yup.number().required().positive(),
     });
 
     await productRegisterSchema.validate(product);
@@ -68,6 +67,11 @@ export async function POST(request: Request) {
           create: product.tags.map((tag) => ({
             tagName: tag.tagName,
           })),
+        },
+        category: {
+          connect: {
+            id: product.category,
+          },
         },
       },
     });

@@ -99,6 +99,8 @@ model Product {
   active      Boolean
   color       String
   girl        Boolean
+  category    Category          @relation(fields: [categoryId], references: [id])
+  categoryId  Int
   sizes       ProductSize[]
   tags        Tags[]
   cart        Cart?             @relation(fields: [cartId], references: [id])
@@ -129,9 +131,17 @@ model ProductSize {
 
 model Tags {
   id        Int      @id @default(autoincrement())
-  tagName  String
+  tagName   String
   Product   Product? @relation(fields: [productId], references: [id])
   productId Int?
 
   @@map("tags")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  categoryName  String
+  products Product[]
+
+  @@map("category")
 }
