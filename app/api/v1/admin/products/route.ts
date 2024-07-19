@@ -4,7 +4,40 @@ import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 import supabase from "@/lib/supabase/supabaseClient";
 
-export async function GET() {}
+const prisma = new PrismaClient();
+
+export async function GET(request: Request) {
+  try {
+    const productsList = await prisma.product.findMany({
+      include: {
+        images: true,
+      },
+    });
+
+    const productsWithImageUrls = productsList.map(product => ({
+      ...product,
+      images: product.images.map(image => image.imageUrl),
+    }));
+
+    if (!productsWithImageUrls) {
+      throw new Error("Product data is missing");
+    }
+
+    return new NextResponse(JSON.stringify(productsWithImageUrls), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    return new NextResponse(JSON.stringify({ error: error }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -47,7 +80,6 @@ export async function POST(request: Request) {
 
     await productRegisterSchema.validate(product);
 
-    const prisma = new PrismaClient();
     const newProduct = await prisma.product.create({
       data: {
         name: product.name,
@@ -83,7 +115,27 @@ export async function POST(request: Request) {
         newProduct.name.split(" ")[0]
       }_${d.getFullYear()}`;
 
-      await supabase.storage.from("fotos").upload(nameFile, validFiles[i]);
+      const { data, error } = await supabase.storage
+        .from("fotos")
+        .upload(nameFile, validFiles[i]);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      const insertImage = await prisma.productImage.create({
+        data: {
+          productId: newProduct.id,
+          imageUrl: `${process.env
+            .NEXT_PUBLIC_SUPABASE_URL!}/storage/v1/object/public/${
+            data.fullPath
+          }`,
+        },
+      });
+
+      if (!insertImage) {
+        throw new Error("Error to insert image on BD");
+      }
     }
 
     if (newProduct)

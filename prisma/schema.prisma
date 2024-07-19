@@ -28,33 +28,50 @@ model User {
   addresses   Address[]
   cartId      Int?
   userSticker UserSticker[]
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
 
   @@map("users")
 }
 
 model Address {
-  id         Int     @id @default(autoincrement())
+  id         Int      @id @default(autoincrement())
   userId     String
-  user       User    @relation(fields: [userId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
   postalCode Int
   num        Int
   district   String
   complement String?
   city       String
   state      String
-  principal  Boolean @default(false)
+  principal  Boolean  @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@map("address")
 }
 
 model Cart {
-  id             Int       @id @default(autoincrement())
-  products       Product[]
+  id             Int           @id @default(autoincrement())
   amountProducts Int
   price          Float
   users          User[]
+  products       CartProduct[]
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
 
   @@map("cart")
+}
+
+model CartProduct {
+  productId Int
+  cartId    Int
+  quantity  Int
+  product   Product @relation(fields: [productId], references: [id])
+  cart      Cart    @relation(fields: [cartId], references: [id])
+
+  @@id([productId, cartId])
+  @@map("cartProduct")
 }
 
 model Purchase {
@@ -64,8 +81,10 @@ model Purchase {
   NFe         String
   totalPrice  Float
   sended      Boolean           @default(false)
-  products    PurchaseProduct[] // Relacionamento muitos-para-muitos através do modelo de junção
+  products    PurchaseProduct[]
   trackingNum String?
+  created_at  DateTime          @default(now())
+  updated_at  DateTime          @updatedAt
 
   @@map("purchase")
 }
@@ -76,6 +95,8 @@ model Sticker {
   imgUrl      String
   users       User[]        @relation("UserStickers")
   userSticker UserSticker[]
+  created_at  DateTime      @default(now())
+  updated_at  DateTime      @updatedAt
 
   @@map("sticker")
 }
@@ -101,13 +122,24 @@ model Product {
   girl        Boolean
   category    Category          @relation(fields: [categoryId], references: [id])
   categoryId  Int
-  sizes       ProductSize[]
   tags        Tags[]
-  cart        Cart?             @relation(fields: [cartId], references: [id])
-  cartId      Int?
+  created_at  DateTime          @default(now())
+  updated_at  DateTime          @updatedAt
+  sizes       ProductSize[]
+  carts       CartProduct[]
   purchases   PurchaseProduct[]
+  images      ProductImage[]
 
   @@map("product")
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  imageUrl  String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("productImage")
 }
 
 model PurchaseProduct {
@@ -117,6 +149,7 @@ model PurchaseProduct {
   productId  Int
 
   @@id([purchaseId, productId])
+  @@map("purchaseProduct")
 }
 
 model ProductSize {
@@ -130,18 +163,55 @@ model ProductSize {
 }
 
 model Tags {
-  id        Int      @id @default(autoincrement())
-  tagName   String
-  Product   Product? @relation(fields: [productId], references: [id])
-  productId Int?
+  id         Int      @id @default(autoincrement())
+  tagName    String
+  Product    Product? @relation(fields: [productId], references: [id])
+  productId  Int?
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   @@map("tags")
 }
 
 model Category {
-  id       Int       @id @default(autoincrement())
-  categoryName  String
-  products Product[]
+  id           Int       @id @default(autoincrement())
+  categoryName String
+  products     Product[]
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
 
   @@map("category")
 }
+
+// INSERT INTO category ("categoryName", "updated_at")
+// VALUES 
+// ('Camiseta', current_timestamp),
+// ('Calça', current_timestamp),
+// ('Vestido', current_timestamp),
+// ('Bermuda', current_timestamp),
+// ('Macacão', current_timestamp),
+// ('Conjunto', current_timestamp),
+// ('Saia', current_timestamp),
+// ('Casaco', current_timestamp),
+// ('Jaqueta', current_timestamp),
+// ('Blusa', current_timestamp),
+// ('Roupa de Banho', current_timestamp),
+// ('Roupa de Frio', current_timestamp),
+// ('Roupa de Verão', current_timestamp),
+// ('Uniforme Escolar', current_timestamp),
+// ('Roupa Esportiva', current_timestamp),
+// ('Pijama', current_timestamp),
+// ('Fantasia', current_timestamp),
+// ('Roupa de Bebê', current_timestamp),
+// ('Recém-Nascido', current_timestamp),
+// ('Sapato', current_timestamp),
+// ('Acessório', current_timestamp),
+// ('Meia', current_timestamp),
+// ('Luva', current_timestamp),
+// ('Chapéu', current_timestamp),
+// ('Cinto', current_timestamp),
+// ('Touca', current_timestamp),
+// ('Lenço', current_timestamp),
+// ('Moleton', current_timestamp),
+// ('Calçado', current_timestamp),
+// ('Roupa Íntima', current_timestamp);

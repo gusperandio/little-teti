@@ -6,7 +6,10 @@ CREATE TABLE "users" (
     "password" TEXT NOT NULL,
     "phone" TEXT,
     "cpf" TEXT,
+    "role" TEXT DEFAULT 'user',
     "cartId" INTEGER,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -22,6 +25,8 @@ CREATE TABLE "address" (
     "city" TEXT NOT NULL,
     "state" TEXT NOT NULL,
     "principal" BOOLEAN NOT NULL DEFAULT false,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "address_pkey" PRIMARY KEY ("id")
 );
@@ -31,8 +36,19 @@ CREATE TABLE "cart" (
     "id" SERIAL NOT NULL,
     "amountProducts" INTEGER NOT NULL,
     "price" DOUBLE PRECISION NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "cart_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "CartProduct" (
+    "productId" INTEGER NOT NULL,
+    "cartId" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL,
+
+    CONSTRAINT "CartProduct_pkey" PRIMARY KEY ("productId","cartId")
 );
 
 -- CreateTable
@@ -43,6 +59,8 @@ CREATE TABLE "purchase" (
     "totalPrice" DOUBLE PRECISION NOT NULL,
     "sended" BOOLEAN NOT NULL DEFAULT false,
     "trackingNum" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "purchase_pkey" PRIMARY KEY ("id")
 );
@@ -52,6 +70,8 @@ CREATE TABLE "sticker" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "imgUrl" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "sticker_pkey" PRIMARY KEY ("id")
 );
@@ -65,7 +85,7 @@ CREATE TABLE "userSticker" (
 );
 
 -- CreateTable
-CREATE TABLE "Product" (
+CREATE TABLE "product" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -73,10 +93,20 @@ CREATE TABLE "Product" (
     "fakePrice" DOUBLE PRECISION NOT NULL,
     "active" BOOLEAN NOT NULL,
     "color" TEXT NOT NULL,
-    "cartId" INTEGER,
-    "purchaseId" INTEGER,
+    "girl" BOOLEAN NOT NULL,
+    "categoryId" INTEGER NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "product_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PurchaseProduct" (
+    "purchaseId" INTEGER NOT NULL,
+    "productId" INTEGER NOT NULL,
+
+    CONSTRAINT "PurchaseProduct_pkey" PRIMARY KEY ("purchaseId","productId")
 );
 
 -- CreateTable
@@ -87,6 +117,27 @@ CREATE TABLE "productSize" (
     "amount" INTEGER NOT NULL,
 
     CONSTRAINT "productSize_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "tags" (
+    "id" SERIAL NOT NULL,
+    "tagName" TEXT NOT NULL,
+    "productId" INTEGER,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "tags_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "category" (
+    "id" SERIAL NOT NULL,
+    "categoryName" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "category_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -111,6 +162,12 @@ ALTER TABLE "users" ADD CONSTRAINT "users_cartId_fkey" FOREIGN KEY ("cartId") RE
 ALTER TABLE "address" ADD CONSTRAINT "address_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "CartProduct" ADD CONSTRAINT "CartProduct_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "CartProduct" ADD CONSTRAINT "CartProduct_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "purchase" ADD CONSTRAINT "purchase_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -120,13 +177,19 @@ ALTER TABLE "userSticker" ADD CONSTRAINT "userSticker_userId_fkey" FOREIGN KEY (
 ALTER TABLE "userSticker" ADD CONSTRAINT "userSticker_stickerId_fkey" FOREIGN KEY ("stickerId") REFERENCES "sticker"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_cartId_fkey" FOREIGN KEY ("cartId") REFERENCES "cart"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "product" ADD CONSTRAINT "product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "purchase"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "PurchaseProduct" ADD CONSTRAINT "PurchaseProduct_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "purchase"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "productSize" ADD CONSTRAINT "productSize_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PurchaseProduct" ADD CONSTRAINT "PurchaseProduct_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "productSize" ADD CONSTRAINT "productSize_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "tags" ADD CONSTRAINT "tags_productId_fkey" FOREIGN KEY ("productId") REFERENCES "product"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_UserStickers" ADD CONSTRAINT "_UserStickers_A_fkey" FOREIGN KEY ("A") REFERENCES "sticker"("id") ON DELETE CASCADE ON UPDATE CASCADE;
