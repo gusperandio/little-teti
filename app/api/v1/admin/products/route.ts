@@ -1,4 +1,4 @@
-import { IProduct } from "./../../../../../types/interface/requests/Iproduct";
+import { IProductRequest } from "../../../../../types/interface/requests/Iproduct";
 import * as yup from "yup";
 import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
@@ -6,18 +6,38 @@ import supabase from "@/lib/supabase/supabaseClient";
 
 const prisma = new PrismaClient();
 
-export async function GET(request: Request) {
+export async function GET(
+  request: Request,
+  { params }: { params: { id: number } }
+) {
   try {
+    // const url = new URL(request.url);
+    // const searchParam = new URLSearchParams(url.searchParams);
+    // const inative = searchParam.get("inative") === "true" ?? true;
+    // const { id } = params;
+
     const productsList = await prisma.product.findMany({
       include: {
         images: true,
+        category: true,
+        tags: true,
+        sizes: true,
       },
     });
 
-    const productsWithImageUrls = productsList.map(product => ({
-      ...product,
-      images: product.images.map(image => image.imageUrl),
-    }));
+    const productsWithImageUrls = productsList.map((product) => {
+      const { categoryId, category, ...rest } = product;
+      return {
+        ...rest,
+        categoryName: category.categoryName,
+        tags: product.tags.map((tag) => tag.tagName),
+        sizes: product.sizes.map((size) => {
+          const { id, productId, ...restSize } = size;
+          return restSize;
+        }),
+        images: product.images.map((image) => image.imageUrl),
+      };
+    });
 
     if (!productsWithImageUrls) {
       throw new Error("Product data is missing");
@@ -54,7 +74,7 @@ export async function POST(request: Request) {
       throw new Error("Error in file");
     }
 
-    const product: IProduct = JSON.parse(productData.toString());
+    const product: IProductRequest = JSON.parse(productData.toString());
 
     const productRegisterSchema = yup.object().shape({
       name: yup.string().required(),
@@ -153,22 +173,4 @@ export async function POST(request: Request) {
       },
     });
   }
-}
-
-export async function PUT() {
-  return new NextResponse(JSON.stringify({ status: "PUT" }), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-}
-
-export async function DELETE() {
-  return new NextResponse(JSON.stringify({ status: "DELETE" }), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-}
+}  

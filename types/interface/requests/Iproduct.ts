@@ -1,7 +1,7 @@
 import { IProductSize } from "./IproductSize";
 import { ITags } from "./Itags";
 
-export interface IProduct { 
+export interface IProductRequest { 
   name: string;
   description?: string | null;
   price: number;
