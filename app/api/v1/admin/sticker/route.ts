@@ -1,6 +1,7 @@
+import { IStickerUpdate } from "@/types/interface/requests/Isticker";
 import supabase from "@/lib/supabase/supabaseClient";
-import { IStickerRequest } from "@/types/interface/requests/Isticker";
-import { PrismaClient } from "@prisma/client";
+import { IStickerRegister } from "@/types/interface/requests/Isticker";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
       throw new Error("Error in file");
     }
 
-    const sticker: IStickerRequest = JSON.parse(stickerData.toString());
+    const sticker: IStickerRegister = JSON.parse(stickerData.toString());
 
     const d = new Date();
     let nameFile = `sticker/${sticker.name.split(" ")[0]}_${
@@ -87,14 +88,28 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  const body = await request.json();
-  console.log(body);
-  return new NextResponse(null, {
-    status: 202,
-    headers: {
-      "Content-Type": "application/json",
+  const sticker: IStickerUpdate = await request.json();
+
+  const stickerUpdated = await prisma.sticker.update({
+    where: {
+      id: sticker.id,
+    },
+    data: {
+      name: sticker.name,
+      description: sticker.description,
+      discount: sticker.discount,
+      active: sticker.active,
     },
   });
+
+  if (stickerUpdated) {
+    return new NextResponse(null, {
+      status: 202,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
 }
 
 export async function DELETE(request: Request) {

@@ -1,14 +1,12 @@
 import { IProductRequest } from "../../../../../types/interface/requests/Iproduct";
 import * as yup from "yup";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 import supabase from "@/lib/supabase/supabaseClient";
 
 const prisma = new PrismaClient();
 
-export async function GET(
-  request: Request
-) {
+export async function GET(request: Request) {
   try {
     // const url = new URL(request.url);
     // const searchParam = new URLSearchParams(url.searchParams);
@@ -73,7 +71,9 @@ export async function POST(request: Request) {
       throw new Error("Error in file");
     }
 
-    const product: IProductRequest = JSON.parse(productData.toString());
+    const product: Prisma.ProductCreateInput = JSON.parse(
+      productData.toString()
+    );
 
     const productRegisterSchema = yup.object().shape({
       name: yup.string().required(),
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       active: yup.bool().required(),
       color: yup.string().required(),
       girl: yup.bool().required(),
-      sizes: yup.array().of(
+      sizes: yup.array().of(  
         yup.object().shape({
           sizeName: yup.string().required(),
           amount: yup.number().required().positive(),
@@ -108,22 +108,9 @@ export async function POST(request: Request) {
         active: product.active,
         color: product.name,
         girl: product.girl,
-        sizes: {
-          create: product.sizes.map((size) => ({
-            sizeName: size.sizeName,
-            amount: size.amount,
-          })),
-        },
-        tags: {
-          create: product.tags.map((tag) => ({
-            tagName: tag.tagName,
-          })),
-        },
-        category: {
-          connect: {
-            id: product.category,
-          },
-        },
+        sizes: product.sizes,
+        tags: product.tags,
+        category: product.category,
       },
     });
 
@@ -172,4 +159,4 @@ export async function POST(request: Request) {
       },
     });
   }
-}  
+}
