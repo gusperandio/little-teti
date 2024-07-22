@@ -93,6 +93,9 @@ model Sticker {
   id          String        @id @default(uuid())
   name        String
   imgUrl      String
+  description String
+  discount    Float
+  active      Boolean
   users       User[]        @relation("UserStickers")
   userSticker UserSticker[]
   created_at  DateTime      @default(now())
@@ -106,6 +109,7 @@ model UserSticker {
   user      User    @relation(fields: [userId], references: [id])
   stickerId String
   sticker   Sticker @relation(fields: [stickerId], references: [id])
+  amount    Int
 
   @@id([userId, stickerId])
   @@map("userSticker")

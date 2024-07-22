@@ -7,8 +7,7 @@ import supabase from "@/lib/supabase/supabaseClient";
 const prisma = new PrismaClient();
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: number } }
+  request: Request
 ) {
   try {
     // const url = new URL(request.url);

@@ -2,13 +2,12 @@ import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
-
-export async function GET(
-  request: Request,
-  { params }: { params: { id: number } }
-) {
+type Identity = {
+  id: number;
+};
+export async function GET(request: Request, context: { params: Identity }) {
   try {
-    const { id } = params;
+    const id = context.params.id;
 
     if (!id) {
       throw new Error("Error");

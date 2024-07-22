@@ -1,13 +1,29 @@
+import supabase from "@/lib/supabase/supabaseClient";
+import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const prisma = new PrismaClient();
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   try {
-  
-  } catch (error) {}
+    const { data, error } = await supabase.storage
+      .from("fotos")
+      .remove(["roupas/3_0_Vestido_2024"]);
+
+    console.log(data, error)
+
+    return new NextResponse(null, {
+      status: 202,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  } catch (error) {
+    return new NextResponse(JSON.stringify({ error: error }), {
+      status: 500,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+  }
 }
